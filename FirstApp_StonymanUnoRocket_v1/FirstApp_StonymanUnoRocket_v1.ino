@@ -64,7 +64,7 @@ so on.
 //
 // Note that you will be able to get 2D optical flow working on 
 // an UNO if you remove other variables from the sketch.
-#define USING_MEGA 1
+#define USING_MEGA 0
 
 //=============================================================================
 // INCLUDE FILES. The top four files are part of the ArduEye library and should
@@ -435,6 +435,9 @@ void loop() {
       case '2':
         sensormode = 2;
         Serial.println("Mode 2");
+        #if USING_MEGA==0
+        Serial.println("NO OUTPUT: USING_MEGA flag is 0");
+        #endif
         break;
         
       // Put sensor in mode 3 e.g. light tracking mode
@@ -599,18 +602,17 @@ void loop() {
       case '!':
         if(commandArgument==0) {
           GUI.stop();
-          Serial.println("GUI off");
+          Serial.println("Arduino Out! GUI off");
         }
         if(commandArgument==1) {
           GUI.start();
-          Serial.println("GUI on");
+          Serial.println("Arduino Here! GUI on");
         }
         break;        
         
       // ? and default- print up command list
-      case '?':
-      default:
-        dumpCommandList();
+      case '?':dumpCommandList();break;
+      default:break;
     }
   }
   digitalWrite(3,LOW);
