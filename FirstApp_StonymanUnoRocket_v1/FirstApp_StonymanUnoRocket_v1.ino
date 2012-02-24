@@ -1,57 +1,57 @@
 /* FIRSTAPP_STONYMANUNOROCKET_V1
-
-This is an example "first application" written for the ArduEye system using
-a StonymanUnoRocket base shield and a Stonyman image sensor chip mounted on
-a Stonyman breakout board. This sketch should be used with the related tutorial
-on the www.ardueye.com wiki.
-
-This sketch allows a number of different concepts to be explored, including
-operaating a Stonyman image sensor, acquiring an image, compensating for 
-fixed pattern noise, tracking lights, and performing both 1D and 2D optical
-flow. 
-
-Started Feb 15, 2012
-*/
+ 
+ This is an example "first application" written for the ArduEye system using
+ a StonymanUnoRocket base shield and a Stonyman image sensor chip mounted on
+ a Stonyman breakout board. This sketch should be used with the related tutorial
+ on the www.ardueye.com wiki.
+ 
+ This sketch allows a number of different concepts to be explored, including
+ operating a Stonyman image sensor, acquiring an image, compensating for 
+ fixed pattern noise, tracking lights, and performing both 1D and 2D optical
+ flow. 
+ 
+ Started Feb 15, 2012
+ */
 
 /*
 ===============================================================================
-Copyright (c) 2012 Centeye, Inc. 
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without 
-modification, are permitted provided that the following conditions are met:
-
-    Redistributions of source code must retain the above copyright notice, 
-    this list of conditions and the following disclaimer.
-    
-    Redistributions in binary form must reproduce the above copyright notice, 
-    this list of conditions and the following disclaimer in the documentation 
-    and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY CENTEYE, INC. ``AS IS'' AND ANY EXPRESS OR 
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO 
-EVENT SHALL CENTEYE, INC. OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY 
-OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-The views and conclusions contained in the software and documentation are 
-those of the authors and should not be interpreted as representing official 
-policies, either expressed or implied, of Centeye, Inc.
-===============================================================================
-*/
+ Copyright (c) 2012 Centeye, Inc. 
+ All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without 
+ modification, are permitted provided that the following conditions are met:
+ 
+ Redistributions of source code must retain the above copyright notice, 
+ this list of conditions and the following disclaimer.
+ 
+ Redistributions in binary form must reproduce the above copyright notice, 
+ this list of conditions and the following disclaimer in the documentation 
+ and/or other materials provided with the distribution.
+ 
+ THIS SOFTWARE IS PROVIDED BY CENTEYE, INC. ``AS IS'' AND ANY EXPRESS OR 
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
+ MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO 
+ EVENT SHALL CENTEYE, INC. OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
+ INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+ BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY 
+ OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
+ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ The views and conclusions contained in the software and documentation are 
+ those of the authors and should not be interpreted as representing official 
+ policies, either expressed or implied, of Centeye, Inc.
+ ===============================================================================
+ */
 
 /*
 Note on image arrays: To save space and speed up operations, we store all images,
-whether 1D or 2D, in a 1D array. The pixels are stored row-wise. So suppose
-array A holds a 16x16 image. Then values A[0] through A[15] store the first row
-of pixel values, values A[16] through A[31] the second row of pixel values, and
-so on.
-*/
+ whether 1D or 2D, in a 1D array. The pixels are stored row-wise. So suppose
+ array A holds a 16x16 image. Then values A[0] through A[15] store the first row
+ of pixel values, values A[16] through A[31] the second row of pixel values, and
+ so on.
+ */
 
 // USING_MEGA: IMPORTANT!!!
 // This flag determines whether support for 2D optical flow
@@ -127,7 +127,7 @@ short A[NUMPIXELS]; // current 16x16 image.
 // entire FPN array. Thus the FPN mask for pixel i will be the 
 // value C[i]+Cbase.
 unsigned char C[NUMPIXELS]; // 16x16 FPN calibration image
-short Cbase; // FPN calibration image base.
+short Cbase=0; // FPN calibration image base.
 
 // Line images for 1D optical flow. 
 short S1[LINE_IMG_SIZE]; // line image from previous frame
@@ -161,7 +161,7 @@ short lightM[MAXLIGHTS],lightN[MAXLIGHTS]; // light locations. M is for rows and
 short lightI[MAXLIGHTS]; // light intensity
 short lightC[MAXLIGHTS]; // light convexity
 char numActiveLights; // number of lights in current frame
-   
+
 // Hyperacuity
 char useHyperacuity = 0; // Whether or not to use hyperacuity to boost light tracking accuracy by 10
 
@@ -196,12 +196,12 @@ char startingup; // set to 1 initially; cleared after first iteration of loop()
 void DispWholeStonymanChip(char anain) {
   unsigned char row,col;
   short val,maximum,minimum;
-  
+
   maximum=0; // initialize
   minimum=20000; // initialize
-  
+
   SMH1_ConfigureAnalogInput(anain); // Make sure analog pin is configured as input	
-  
+
   // FIRST PASS
   // First compute minimum and maximum of chip
   SMH1_SetPtrValSlow(SMH_SYS_ROWSEL,0); // set row = 0
@@ -230,7 +230,7 @@ void DispWholeStonymanChip(char anain) {
   }
   Serial.println(maximum);
   Serial.println(minimum);
-  
+
   // SECOND PASS
   // Display image
   SMH1_SetPtrValSlow(SMH_SYS_ROWSEL,0); // set row = 0
@@ -285,7 +285,7 @@ short HyperMax2(short a, short b, short c) {
 void GetUserCommand(char *command, int *argument) {
   char cmdbuf[11];
   unsigned char i;
-  
+
   // initialize
   for (i=0; i<11; ++i)
     cmdbuf[i] = 0;
@@ -317,33 +317,56 @@ void GetUserCommand(char *command, int *argument) {
 // removing this function.
 #define DCDL 50
 void dumpCommandList() {
-  Serial.println("0: quiet"); delay(DCDL);
-  Serial.println("1: 1D"); delay(DCDL);
+  Serial.println("0: quiet"); 
+  delay(DCDL);
+  Serial.println("1: 1D"); 
+  delay(DCDL);
 #if USING_MEGA==1
-  Serial.println("2: 2D"); delay(DCDL);
+  Serial.println("2: 2D"); 
+  delay(DCDL);
 #endif
-  Serial.println("3: lights"); delay(DCDL);
-  Serial.println("a: ASCII win"); delay(DCDL);
-  Serial.println("A: ASCII chip"); delay(DCDL);
-  Serial.println("b: reset"); delay(DCDL);
-  Serial.println("c: calib"); delay(DCDL);
-  Serial.println("d#: orient 1/2"); delay(DCDL);
-  Serial.println("e: res ODO"); delay(DCDL);
-  Serial.println("g#: GUIoffset"); delay(DCDL);
-  Serial.println("h#: 1/0 hyp"); delay(DCDL);
-  Serial.println("i: ping"); delay(DCDL);
-  Serial.println("m#: PH row=#"); delay(DCDL);
-  Serial.println("n#: PH col=#"); delay(DCDL);
-  Serial.println("o#: outlev=#"); delay(DCDL);
-  Serial.println("p: find PH"); delay(DCDL);
+  Serial.println("3: lights"); 
+  delay(DCDL);
+  Serial.println("a: ASCII win"); 
+  delay(DCDL);
+  Serial.println("A: ASCII chip"); 
+  delay(DCDL);
+  Serial.println("b: reset"); 
+  delay(DCDL);
+  Serial.println("c: calib"); 
+  delay(DCDL);
+  Serial.println("d#: orient 1/2"); 
+  delay(DCDL);
+  Serial.println("e: res ODO"); 
+  delay(DCDL);
+  Serial.println("g#: GUIoffset"); 
+  delay(DCDL);
+  Serial.println("h#: 1/0 hyp"); 
+  delay(DCDL);
+  Serial.println("i: ping"); 
+  delay(DCDL);
+  Serial.println("m#: PH row=#"); 
+  delay(DCDL);
+  Serial.println("n#: PH col=#"); 
+  delay(DCDL);
+  Serial.println("o#: outlev=#"); 
+  delay(DCDL);
+  Serial.println("p: find PH"); 
+  delay(DCDL);
   Serial.println("q: calib->EEPROM");
   Serial.println("r: calib<-EEPROM");
-  Serial.println("s#: convex th=#"); delay(DCDL);
-  Serial.println("t#: intens th=#"); delay(DCDL);
-  Serial.println("u: dump"); delay(DCDL);
-  Serial.println("z: MATLAB win"); delay(DCDL);  
-  Serial.println("Z: MATLAB chip"); delay(DCDL);
-  Serial.println("!#: GUI on/off"); delay(DCDL);
+  Serial.println("s#: convex th=#"); 
+  delay(DCDL);
+  Serial.println("t#: intens th=#"); 
+  delay(DCDL);
+  Serial.println("u: dump"); 
+  delay(DCDL);
+  Serial.println("z: MATLAB win"); 
+  delay(DCDL);  
+  Serial.println("Z: MATLAB chip"); 
+  delay(DCDL);
+  Serial.println("!#: GUI on/off"); 
+  delay(DCDL);
 }
 
 //------------------------------------------------------------------------
@@ -367,12 +390,12 @@ void resetchip() {
 
 void setup() {
   char w;
-  
+
   startingup=1;
-  
+
   // Initialize the Stonyman chip
   resetchip();
-  
+
   // Begin serial port
   Serial.begin(115200); // you can use the default 9600 bit rate, but it will be ssssslllllooooowwwwwww
 
@@ -384,21 +407,22 @@ void setup() {
 
   // Sensormode
   sensormode = 0; // Initially quiet mode
-  
+
   // Initialize thresholds for light tracking
   shapeConvexityThreshold = 7;
   intensityThreshold = 0;
-  
+
   // As an estimate, set initial pinhole location to 55,55
-  mPinhole=55;nPinhole=55;
-  
+  mPinhole=55;
+  nPinhole=55;
+
   // GUIoffset value- special parameter.
   GUIoffset=40;
-  
+
   // initialize 1D OF and odometry
   ODOlinearacc=0;
   Sorientation=1; // default horizontal pixels
-  
+
   // initialize 2D odometry values
 #if USING_MEGA==1
   ODOx=ODOy=0;
@@ -408,226 +432,232 @@ void setup() {
 void loop() {
 
   short i,j,k,r,c,m,n;
-  
+
   digitalWrite(3,HIGH);
-  
+
   // PROCESS USER COMMANDS, IF ANY
   if (Serial.available()>0) { // Check Serial buffer for input from user
-  
+
     GetUserCommand(&command,&commandArgument); // get user command and argument
-    
-    // Biiiiig switch statement to process commands
+
+      // Biiiiig switch statement to process commands
     switch (command) {
-      
+
       // Put sensor in mode 0 e.g. quiet
-      case '0':
-        sensormode = 0;
-        Serial.println("Mode 0");
-        break;
-        
+    case '0':
+      sensormode = 0;
+      Serial.println("Mode 0");
+      break;
+
       // Put sensor in mode 1 e.g. 1D optical flow
-      case '1':
-        sensormode = 1;
-        Serial.println("Mode 1");
-        break;
-        
+    case '1':
+      sensormode = 1;
+      Serial.println("Mode 1");
+      break;
+
       // Put sensor in mode 2 e.g. 2D optical flow
-      case '2':
-        sensormode = 2;
-        Serial.println("Mode 2");
-        #if USING_MEGA==0
-        Serial.println("NO OUTPUT: USING_MEGA flag is 0");
-        #endif
-        break;
-        
+    case '2':
+      sensormode = 2;
+      Serial.println("Mode 2");
+#if USING_MEGA==0
+      Serial.println("NO OUTPUT: USING_MEGA flag is 0");
+#endif
+      break;
+
       // Put sensor in mode 3 e.g. light tracking mode
-      case '3':
-        sensormode = 3;
-        Serial.println("Mode 3");
-        break;  
-  
+    case '3':
+      sensormode = 3;
+      Serial.println("Mode 3");
+      break;  
+
       // ASCII dump the 16x16 image A      
-      case 'a':
-        CYE_ImgShortDumpAsciiSerial(A,WINDOWSIZE,WINDOWSIZE,0,0);
-        break;
-        
+    case 'a':
+      CYE_ImgShortDumpAsciiSerial(A,WINDOWSIZE,WINDOWSIZE,0,0);
+      break;
+
       // ASCII dump the entire Stonyman chip
-      case 'A':
-        DispWholeStonymanChip(0);
-        break;
-        
+    case 'A':
+      DispWholeStonymanChip(0);
+      break;
+
       // Reset the chip - use this command if you plug in a new Stonyman chip w/o power cycling
-      case 'b':
-        resetchip();
-        Serial.println("RES");
-        break;
-        
+    case 'b':
+      resetchip();
+      Serial.println("RES");
+      break;
+
       // Grab FPN calibration mask. 
       // Note: this should be performed after the pinhole location is changed, using commands
       // p, m, or n. This should be performed only when the sensor is exposed to a uniform texture
       // e.g. covered with a white sheet of paper or looking at a white wall for example.
-      case 'c': // grab calibration mask
-        SMH1_GetImageSlow(A,mPinhole-WINDOWSIZE/2,WINDOWSIZE,1,nPinhole-WINDOWSIZE/2,WINDOWSIZE,1,0,0);
-        // find minimum
-        Cbase = 10000; // e.g. "high"
-        for (i=0; i<NUMPIXELS; ++i)
-          if (A[i]<Cbase)
-            Cbase = A[i];
-        // generate calibration mask
-        for (i=0; i<NUMPIXELS; ++i)
-          C[i] = A[i] - Cbase;
-        Serial.println("Cal done");
-        break;
-        
+    case 'c': // grab calibration mask
+      SMH1_GetImageSlow(A,mPinhole-WINDOWSIZE/2,WINDOWSIZE,1,nPinhole-WINDOWSIZE/2,WINDOWSIZE,1,0,0);
+      // find minimum
+      Cbase = 10000; // e.g. "high"
+      for (i=0; i<NUMPIXELS; ++i)
+        if (A[i]<Cbase)
+          Cbase = A[i];
+      // generate calibration mask
+      for (i=0; i<NUMPIXELS; ++i)
+        C[i] = A[i] - Cbase;
+      Serial.println("Cal done");
+      break;
+
       // Set orientation of pixels for 1D optical flow computation
       // 1 = horizontal, 2 = vertical
-      case 'd': 
-        Sorientation = commandArgument;
-        if (Sorientation<1 || Sorientation>2)
-          Sorientation=1;
-        Serial.print("Orient=");
-        Serial.println(Sorientation);
-        break;
-        
+    case 'd': 
+      Sorientation = commandArgument;
+      if (Sorientation<1 || Sorientation>2)
+        Sorientation=1;
+      Serial.print("Orient=");
+      Serial.println(Sorientation);
+      break;
+
       // Reset optical flow odometry values to zero
-      case 'e': // reset odometry
-        ODOlinearacc = 0;
+    case 'e': // reset odometry
+      ODOlinearacc = 0;
 #if USING_MEGA==1
-        ODOx=ODOy=0;
+      ODOx=ODOy=0;
 #endif
-        break;
-        
+      break;
+
       // Modify GUI offset value
-      case 'g':
-        GUIoffset = commandArgument;
-        break;
-        
+    case 'g':
+      GUIoffset = commandArgument;
+      break;
+
       // Hyperacuity for light tracking- turn on (one) or off (zero)
-      case 'h':
-        if (commandArgument) {
-          useHyperacuity=1;
-          Serial.println("Hyp on");
-        } else {
-          useHyperacuity=0;
-          Serial.println("Hyp off");
-        }          
-        break;
-        
+    case 'h':
+      if (commandArgument) {
+        useHyperacuity=1;
+        Serial.println("Hyp on");
+      } 
+      else {
+        useHyperacuity=0;
+        Serial.println("Hyp off");
+      }          
+      break;
+
       // For debugging (legacy)
-      case 'i':
-        ping = 1;
-        break;
-        
+    case 'i':
+      ping = 1;
+      break;
+
       // Set pinhole row
-      case 'm': // set pinhole row
-        mPinhole = commandArgument;
-        sprintf(charbuf,"PHrow=%d",mPinhole);
-        Serial.println(charbuf);     
-        break;   
-        
+    case 'm': // set pinhole row
+      mPinhole = commandArgument;
+      sprintf(charbuf,"PHrow=%d",mPinhole);
+      Serial.println(charbuf);     
+      break;   
+
       // Set pinhole column
-      case 'n': // set pinhole column
-        nPinhole = commandArgument;
-        sprintf(charbuf,"PHcol=%d",nPinhole);
-        Serial.println(charbuf); 
-        break;
-        
+    case 'n': // set pinhole column
+      nPinhole = commandArgument;
+      sprintf(charbuf,"PHcol=%d",nPinhole);
+      Serial.println(charbuf); 
+      break;
+
       // Output dump type- for debugging
-      case 'o': // set output dump type
-        dumpType = commandArgument;
-        Serial.print("outtyp=");
-        Serial.println((int)dumpType); 
-        break;         
-        
+    case 'o': // set output dump type
+      dumpType = commandArgument;
+      Serial.print("outtyp=");
+      Serial.println((int)dumpType); 
+      break;         
+
       // find pinhole- hold a flashlight or other bright light above sensor and then send
       // this command. Note you will need to recalibrate the sensor afterwards.
-      case 'p': 
-        Serial.println("Find PH...");
-        SMH1_FindMaxSlow(30,50,30,50,0,&mPinhole,&nPinhole);
-        sprintf(charbuf,"...PH at %d,%d",mPinhole,nPinhole);
-        Serial.println(charbuf);
-        delay(2000);
-        break;
-        
+    case 'p': 
+      Serial.println("Find PH...");
+      SMH1_FindMaxSlow(30,50,30,50,0,&mPinhole,&nPinhole);
+      sprintf(charbuf,"...PH at %d,%d",mPinhole,nPinhole);
+      Serial.println(charbuf);
+      delay(2000);
+      break;
+
       // Save pinhole location and FPN calibration mask to EEPROM
-      case 'q':
-        Serial.println("Calib -> EEPROM...");      
-        EEPROM.write(PINHOLE_LOCATION_EEPROM,mPinhole);
-        EEPROM.write(PINHOLE_LOCATION_EEPROM+1,nPinhole);
-        EEPROM.write(FPN_BASE_EEPROM,(Cbase>>8)&0xFF);
-        EEPROM.write(FPN_BASE_EEPROM+1,Cbase&0xFF);
-        for (i=0; i<NUMPIXELS; ++i)
-          EEPROM.write(FPN_MASK_EEPROM+i,C[i]);
-        Serial.println("Done"); 
-        break;       
-       
+    case 'q':
+      Serial.println("Calib -> EEPROM...");      
+      EEPROM.write(PINHOLE_LOCATION_EEPROM,mPinhole);
+      EEPROM.write(PINHOLE_LOCATION_EEPROM+1,nPinhole);
+      EEPROM.write(FPN_BASE_EEPROM,(Cbase>>8)&0xFF);
+      EEPROM.write(FPN_BASE_EEPROM+1,Cbase&0xFF);
+      for (i=0; i<NUMPIXELS; ++i)
+        EEPROM.write(FPN_MASK_EEPROM+i,C[i]);
+      Serial.println("Done"); 
+      break;       
+
       // read pinhole location and FPN calibration mask from EEPROM 
-      case 'r': 
-        Serial.println("Calib <- EEPROM");
-        mPinhole = EEPROM.read(PINHOLE_LOCATION_EEPROM);
-        nPinhole = EEPROM.read(PINHOLE_LOCATION_EEPROM+1);
-        Cbase = EEPROM.read(FPN_BASE_EEPROM) << 8;
-        Cbase += EEPROM.read(FPN_BASE_EEPROM+1);
-        for (i=0; i<NUMPIXELS; ++i)
-          C[i] = EEPROM.read(FPN_MASK_EEPROM+i); 
-        Serial.println("Done");     
-        break;
-        
+    case 'r': 
+      Serial.println("Calib <- EEPROM");
+      mPinhole = EEPROM.read(PINHOLE_LOCATION_EEPROM);
+      nPinhole = EEPROM.read(PINHOLE_LOCATION_EEPROM+1);
+      Cbase = EEPROM.read(FPN_BASE_EEPROM) << 8;
+      Cbase += EEPROM.read(FPN_BASE_EEPROM+1);
+      for (i=0; i<NUMPIXELS; ++i)
+        C[i] = EEPROM.read(FPN_MASK_EEPROM+i); 
+      Serial.println("Done");     
+      break;
+
       // Set shapeConvexityThreshold (for light tracking)
-      case 's':
-        shapeConvexityThreshold = commandArgument;
-        Serial.print("shape thresh = ");
-        Serial.println((int)shapeConvexityThreshold); 
-        break;     
-     
-     // Set intensityThreshold (for light tracking)
-      case 't': 
-        intensityThreshold = commandArgument;
-        Serial.print("intens thresh = ");
-        Serial.println((int)intensityThreshold); 
-        break;         
-        
+    case 's':
+      shapeConvexityThreshold = commandArgument;
+      Serial.print("shape thresh = ");
+      Serial.println((int)shapeConvexityThreshold); 
+      break;     
+
+      // Set intensityThreshold (for light tracking)
+    case 't': 
+      intensityThreshold = commandArgument;
+      Serial.print("intens thresh = ");
+      Serial.println((int)intensityThreshold); 
+      break;         
+
       // Dump 16x16 image A in MATLAB format
-      case 'z':
-        CYE_ImgShortDumpMatlabSerial(A,WINDOWSIZE,WINDOWSIZE);
-        break;
-        
+    case 'z':
+      CYE_ImgShortDumpMatlabSerial(A,WINDOWSIZE,WINDOWSIZE);
+      break;
+
       // Dump entire Stonyman chip in MATLAB format
-      case 'Z': 
-        SMH1_MatlabDumpEntireChip(0,0,0);
-        break;
-        
+    case 'Z': 
+      SMH1_MatlabDumpEntireChip(0,0,0);
+      break;
+
       // Turns on or off GUI mode. USE ONLY WHEN CONNECTED TO PROCESSING GUI
       // Otherwise you'll get a lot of gobblygook on the serial monitor...
-      case '!':
-        if(commandArgument==0) {
-          GUI.stop();
-          Serial.println("Arduino Out! GUI off");
-        }
-        if(commandArgument==1) {
-          GUI.start();
-          Serial.println("Arduino Here! GUI on");
-        }
-        break;        
-        
-      // ? and default- print up command list
-      case '?':dumpCommandList();break;
-      default:break;
+    case '!':
+      if(commandArgument==0) {
+        GUI.stop();
+        Serial.println("Arduino Out! GUI off");
+      }
+      if(commandArgument==1) {
+        GUI.start();
+        Serial.println("Arduino Here! GUI on");
+      }
+      break;        
+
+      // ? - print up command list
+    case '?':
+      dumpCommandList();
+      break;
+    default:
+      break;
     }
   }
   digitalWrite(3,LOW);
-   
+
   // ACQUIRE A 16x16 IMAGE FROM THE STONYMAN CHIP  
   digitalWrite(2,HIGH);
-  SMH1_GetImageSlow(A,mPinhole-WINDOWSIZE/2,WINDOWSIZE,1,nPinhole-WINDOWSIZE/2,WINDOWSIZE,1,0,0); // about 44ms with 16x16 window
-  //SMH1_GetImageFast(A,mPinhole-WINDOWSIZE/2,WINDOWSIZE,1,nPinhole-WINDOWSIZE/2,WINDOWSIZE,1,0,0); // about 30ms with 16x16 window
-  // Subtract calibration mask
-  for (i=0; i<NUMPIXELS; ++i) {
-    A[i] -= Cbase + C[i];
-    A[i] = -A[i];
-  }
-  digitalWrite(2,LOW);
+  //SMH1_GetImageSlow(A,mPinhole-WINDOWSIZE/2,WINDOWSIZE,1,nPinhole-WINDOWSIZE/2,WINDOWSIZE,1,0,0); // about 44ms with 16x16 window
+  SMH1_GetImageFast(A,mPinhole-WINDOWSIZE/2,WINDOWSIZE,1,nPinhole-WINDOWSIZE/2,WINDOWSIZE,1,0,0); // about 30ms with 16x16 window
   
+  // Subtract calibration mask
+  for (i=0; i<NUMPIXELS;++i) {
+    A[i] -= Cbase+C[i];  //subtract FPN mask
+    A[i]=-A[i];          //negate image so it displays properly
+  }
+
+  digitalWrite(2,LOW);
+
   // PERFORM 1D OPTICAL FLOW COMPUTATIONS
   digitalWrite(2,HIGH);
   if (sensormode==1) {
@@ -657,7 +687,7 @@ void loop() {
     Serial.println(ODOlinearacc);
   }
   digitalWrite(2,LOW);
-  
+
   // PERFORM 2D OPTICAL FLOW COMPUTATIONS
 #if USING_MEGA==1
   if (sensormode==2) {
@@ -679,8 +709,8 @@ void loop() {
     Serial.println(charbuf);
   }
 #endif  
-  
-  // PERFORM LIGHT TRACKING WITHIN ACQUIRED IMAGE A
+
+    // PERFORM LIGHT TRACKING WITHIN ACQUIRED IMAGE A
   if (sensormode==3) {
 
     // If dumpType>=2 then details of the search will be dumped to serial monitor. Note
@@ -698,7 +728,7 @@ void loop() {
     short *pupright = pup+1;
     short *pdownleft = pdown-1;
     short *pdownright = pdown+1;
-  
+
     // This loop takes between 1 and 2ms at 16x16 when not dumping information to Serial monitor
     for (r=1; r<WINDOWSIZE-1; ++r) {
       for (c=1; c<WINDOWSIZE-1; ++c) {
@@ -713,7 +743,8 @@ void loop() {
           // check to see if current pixel exceeds intensity threshold. If intensityThreshold==0 then we bypass this test
           if (intensityThreshold==0 || *pego>=intensityThreshold) {
             if (dumpType>=2) {
-              Serial.print(" b"); Serial.print(*pego);
+              Serial.print(" b"); 
+              Serial.print(*pego);
             }
             // current pixel exceeds intensity threshold. Now check to see if point meets convexity threshold
             short udconvex = 2*(*pego)-*pup-*pdown; // up-down convexity
@@ -722,7 +753,8 @@ void loop() {
             if (lrconvex<cvxval) // set cvxval to the greater of the convexities (recall that pixels are inverted e.g. high value = dark, low value = bright
               cvxval = lrconvex;
             if (dumpType>=2) {
-              Serial.print(" c"); Serial.print(cvxval);
+              Serial.print(" c"); 
+              Serial.print(cvxval);
             }
             if (udconvex>=shapeConvexityThreshold && lrconvex>=shapeConvexityThreshold) {
               if (dumpType>=2) {
@@ -736,7 +768,8 @@ void loop() {
                   short hypery = HyperMax2(*pup,*pego,*pdown);
                   lightM[numActiveLights] = 10*r+hypery;
                   lightN[numActiveLights] = 10*c+hyperx;
-                } else {
+                } 
+                else {
                   lightM[numActiveLights] = r;
                   lightN[numActiveLights] = c;
                 }              
@@ -751,37 +784,49 @@ void loop() {
           }
         }
         // advance to next pixel in row by incrementing all pointers
-        pego++;pup++;pdown++;pleft++;pright++;pupleft++;pupright++;pdownleft++;pdownright++;
+        pego++;
+        pup++;
+        pdown++;
+        pleft++;
+        pright++;
+        pupleft++;
+        pupright++;
+        pdownleft++;
+        pdownright++;
       }
       // advance to next row by double incrementing all pointers (e.g. go to next row and advance one)
-      pego+=2;pup+=2;pdown+=2;pleft+=2;pright+=2;pupleft+=2;pupright+=2;pdownleft+=2;pdownright+=2;
+      pego+=2;
+      pup+=2;
+      pdown+=2;
+      pleft+=2;
+      pright+=2;
+      pupleft+=2;
+      pupright+=2;
+      pdownleft+=2;
+      pdownright+=2;
     }
     digitalWrite(2,LOW);
-  
+
     // GENERATE OUTPUT
     switch (dumpType) {
-      case 0:
-        // output coefficients
-        for (i=0; i<numActiveLights; ++i) {
-          sprintf(charbuf,"  (%3d,%3d)",lightM[i],lightN[i]);
-          Serial.print(charbuf);
-        }
-        if (numActiveLights>=1)
-          Serial.println("");
-        else
-          Serial.println("none");
-        break;
+    case 0:
+      // output coefficients
+      for (i=0; i<numActiveLights; ++i) {
+        sprintf(charbuf,"  (%3d,%3d)",lightM[i],lightN[i]);
+        Serial.print(charbuf);
+      }
+      if (numActiveLights>=1)
+        Serial.println("");
+      else
+        Serial.println("none");
+      break;
     }
   }
 
   // if GUI is enabled then send image
-  // first add GUI offset - this is a bit a hack for the time being (until we can figure out how
-  // to get the GUI to read negative numbers!!!)
-  for (i=0; i<NUMPIXELS; ++i)
-    A[i] += GUIoffset;
   // print image
   GUI.sendImage(WINDOWSIZE,WINDOWSIZE,A,NUMPIXELS);
-  
+
   // if GUI enabled, and 1D OF mode on, then send 1D OF
   if (sensormode==1) {
     // store vector in charbuf
@@ -799,7 +844,7 @@ void loop() {
     // send to print
     GUI.sendVectors(1,1,charbuf,1);
   }
-  
+
   // if GUI is enabled, and 2D OF mode on, then send 2D OF
 #if USING_MEGA==1  
   if (sensormode==2) {
@@ -816,22 +861,24 @@ void loop() {
     GUI.sendVectors(1,1,charbuf,1);    
   }
 #endif
-  
+
   // if GUI enabled, and lights mode is on, then send light locations
   if (sensormode==3) {
     for (i=0; i<numActiveLights; ++i) {
       if (useHyperacuity) {
         bytebuf[2*i]=lightM[i]/10;
         bytebuf[2*i+1]=lightN[i]/10;
-      } else {
+      } 
+      else {
         bytebuf[2*i]=lightM[i];
         bytebuf[2*i+1]=lightN[i];        
       }
     }
     GUI.sendPoints(WINDOWSIZE,WINDOWSIZE,bytebuf,numActiveLights);
   }
-  
+
   digitalWrite(3,LOW);
   ping = 0;
   startingup = 0;
 }
+
