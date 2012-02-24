@@ -11,6 +11,7 @@
  flow. 
  
  Started Feb 15, 2012
+ February 24, 2012: miscellaneous updates; removed "fast" option, removed GUI offset
  */
 
 /*
@@ -178,7 +179,6 @@ int ODOx,ODOy;
 // GUI object- these are used when the ArduEye is connected to the ArduEyeGUI program 
 // (written in Processing)
 ArduEyeGUI GUI;
-short GUIoffset;
 byte bytebuf[20];
 
 // Miscellaneous
@@ -339,8 +339,6 @@ void dumpCommandList() {
   delay(DCDL);
   Serial.println("e: res ODO"); 
   delay(DCDL);
-  Serial.println("g#: GUIoffset"); 
-  delay(DCDL);
   Serial.println("h#: 1/0 hyp"); 
   delay(DCDL);
   Serial.println("i: ping"); 
@@ -415,9 +413,6 @@ void setup() {
   // As an estimate, set initial pinhole location to 55,55
   mPinhole=55;
   nPinhole=55;
-
-  // GUIoffset value- special parameter.
-  GUIoffset=40;
 
   // initialize 1D OF and odometry
   ODOlinearacc=0;
@@ -519,11 +514,6 @@ void loop() {
 #if USING_MEGA==1
       ODOx=ODOy=0;
 #endif
-      break;
-
-      // Modify GUI offset value
-    case 'g':
-      GUIoffset = commandArgument;
       break;
 
       // Hyperacuity for light tracking- turn on (one) or off (zero)
@@ -647,8 +637,7 @@ void loop() {
 
   // ACQUIRE A 16x16 IMAGE FROM THE STONYMAN CHIP  
   digitalWrite(2,HIGH);
-  //SMH1_GetImageSlow(A,mPinhole-WINDOWSIZE/2,WINDOWSIZE,1,nPinhole-WINDOWSIZE/2,WINDOWSIZE,1,0,0); // about 44ms with 16x16 window
-  SMH1_GetImageFast(A,mPinhole-WINDOWSIZE/2,WINDOWSIZE,1,nPinhole-WINDOWSIZE/2,WINDOWSIZE,1,0,0); // about 30ms with 16x16 window
+  SMH1_GetImageSlow(A,mPinhole-WINDOWSIZE/2,WINDOWSIZE,1,nPinhole-WINDOWSIZE/2,WINDOWSIZE,1,0,0); // about 44ms with 16x16 window
   
   // Subtract calibration mask
   for (i=0; i<NUMPIXELS;++i) {
